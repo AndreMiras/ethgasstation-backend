@@ -292,7 +292,7 @@ class BlockDataContainer():
         self.safe = df.loc[df['hashp_pct'] >= 35].index.min()
         self.avg = df.loc[df['hashp_pct'] >= 55].index.min()
         self.fast = df.loc[df['hashp_pct'] >= 92].index.min()
-        self.fastest = df.loc[df['hashp_pct']>=99].index.min()
+        self.fastest = df.loc[df['hashp_pct'] >= 99].index.min()
         self.hashpower = df
         self.block_time = avg_timemined
         self.gaslimit = gaslimit
@@ -856,6 +856,10 @@ class GasPriceReport():
         if self.gprecs['fast'] > self.gprecs['fastest']:
             self.gprecs['fastest'] = self.gprecs['fast']
             self.gprecs['fastestWait'] = self.gprecs['fastWait']
+
+        if (self.gprecs['fast'] - self.gprecs['average']) <= 100 and (self.gprecs['fastest'] - self.gprecs['fast'] <= 300):
+            self.gprecs['fast'] = self.gprecs['fastest']
+            self.gprecs['fastWait'] = self.gprecs['fastestWait']
 
 
         gasPrice = int(self.gprecs['fastest'])
