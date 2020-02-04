@@ -8,6 +8,7 @@ v0 API, and similar legacy services.
 
 import json
 import os
+import math
 import numpy as np
 from hexbytes import HexBytes
 from urllib.parse import urlparse
@@ -82,6 +83,8 @@ class JSONExporter(object):
                     mixed[attr] = value.hex().lower()
                 elif isinstance(value, np.int64):
                     mixed[attr] = int(value)
+                elif isinstance(value, float) and math.isnan(value):
+                    mixed[attr] = -1.0
 
         return json.dumps(mixed)
 
