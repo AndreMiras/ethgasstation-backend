@@ -45,7 +45,7 @@ def master_control(args):
 
     while True:
         try:
-            console.info("Started new run(gas calculation) at: " + time.strftime("%Y/%m/%d %H:%M:%S") + ", elapsed: " + str(time.time() - start_time) + "s")
+            console.info("Started new run at: " + time.strftime("%Y/%m/%d %H:%M:%S") + ", elapsed: " + str(time.time() - start_time) + "s")
             start_time = time.time()
 
             alltx.reInitWeb3()
