@@ -103,8 +103,8 @@ def get_web3_provider():
     if protocol == 'ws' or protocol == 'wss':
         provider = WebsocketProvider(
             "%s://%s:%s" % (
-                "wss",
-                "restless-twilight-hill.quiknode.io/e260fb84-2cb5-4651-bbe3-de8dff835818/a0QWwqXLC_MCH0GoCwzA9zdwhOS6JAHkQB7PHsL0ZfjWLXF-uqkaa-YHqBa2UY1iSUMfPxoiSHqfJOs9MeBiTg==/",
+                protocol,
+                hostname,
                 port),
             websocket_kwargs={'timeout':timeout}
         )
@@ -113,8 +113,8 @@ def get_web3_provider():
     elif protocol == 'http' or protocol == 'https':
         provider = HTTPProvider(
             "%s://%s:%s" % (
-                "http",
-                "restless-twilight-hill.quiknode.io/e260fb84-2cb5-4651-bbe3-de8dff835818/a0QWwqXLC_MCH0GoCwzA9zdwhOS6JAHkQB7PHsL0ZfjWLXF-uqkaa-YHqBa2UY1iSUMfPxoiSHqfJOs9MeBiTg==/",
+                protocol,
+                hostname,
                 port),
             request_kwargs={'timeout':timeout}
         )
