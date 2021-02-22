@@ -102,20 +102,20 @@ def get_web3_provider():
 
     if protocol == 'ws' or protocol == 'wss':
         provider = WebsocketProvider(
-            "%s://%s:%s" % (
+            "%s://%s" % (
                 protocol,
-                hostname,
-                port),
+                hostname
+                ),
             websocket_kwargs={'timeout':timeout}
         )
         provider.egs_timeout = timeout
         return Web3(provider)
     elif protocol == 'http' or protocol == 'https':
         provider = HTTPProvider(
-            "%s://%s:%s" % (
+            "%s://%s" % (
                 protocol,
-                hostname,
-                port),
+                hostname
+               ),
             request_kwargs={'timeout':timeout}
         )
         provider.egs_timeout = timeout

@@ -251,7 +251,7 @@ class BlockDataContainer():
 
     def process_block_data (self, block_transactions_df, block_obj):
         """gets block-level summary data and append to block dataframe"""
-        console.debug("Processing block data...")
+        console.info("Processing block data...")
         if len(block_obj.transactions) > 0:
             block_transactions_df['weighted_fee'] = block_transactions_df['round_gp_10gwei']* block_transactions_df['gas_offered']
             block_mingasprice = block_transactions_df['round_gp_10gwei'].min()
@@ -260,7 +260,9 @@ class BlockDataContainer():
             block_mingasprice = np.nan
             block_weightedfee = np.nan
         block_numtx = len(block_obj.transactions)
+        print('--------xxxx', block_numtx)
         timemined = block_transactions_df['time_mined'].min()
+        print('time_mined-----', timemined)
         clean_block = CleanBlock(block_obj, 1, 0, timemined, block_mingasprice, block_numtx, block_weightedfee).to_dataframe()
         self.block_sumdf = clean_block
         self.blockdata_df = self.blockdata_df.append(clean_block, ignore_index = True)
@@ -342,6 +344,7 @@ class AllTxContainer():
                 alltx.set_index('index', drop=True, inplace=True)
                 if 'level_0' in alltx.columns:
                     self.df = alltx.drop('level_0', axis=1)
+                console.info('--------------------123')
             else:
                 return
         except Exception as e:
@@ -489,7 +492,7 @@ class AllTxContainer():
             for txhash, txobject in results.items():
                 block_df.loc[txhash, 'gasused'] = txobject.gasUsed
         except Exception as e:
-            print (e)
+            print ("error: ####",e)
 
         #add mined data to dataframe
         mined_blockdf_seen = block_df[block_df.index.isin(self.df.index)]
@@ -765,6 +768,7 @@ class GasPriceReport():
 
         console.info('safelow: ' + str(safelow))
         console.info('avg: ' +str(average))
+        console.info('fast: ' +str(average))
 
         gprecs = {}
         gprecs['fast'] = self.blockdata.fast
@@ -793,6 +797,16 @@ class GasPriceReport():
         fast_predict = prediction_table.loc[prediction_table['expectedTime'] <= 0.5].index.min()
         console.info('fast predict: ' + str(fast_predict))
 
+        fastestNan = math.isnan(self.gprecs['fastest']) 
+        fastNan = math.isnan(self.gprecs['fast'])
+        safeLowNan = math.isnan(self.gprecs['safeLow']) 
+        averageNan = math.isnan(self.gprecs['average'])
+        print("asdsdsd-----------------------------")
+
+        print(fastest_predict, fast_predict, safelow_predict, avg_predict)
+        print(self.gprecs['fastest'],self.gprecs['fast'],self.gprecs['safeLow'],self.gprecs['average'])
+        print(fastestNan, fastNan, safeLowNan, averageNan)
+        
         if self.gprecs['fast'] < fast_predict:
             self.gprecs['fast'] = fast_predict
 
@@ -801,6 +815,20 @@ class GasPriceReport():
 
         if self.gprecs['average'] < avg_predict:
             self.gprecs['average'] = avg_predict
+
+        
+
+        # if fastestNan:
+        #    self.gprecs['fastest'] = fastest_predict
+
+        # if fastNan:
+        #    self.gprecs['fast'] = fast_predict
+        
+        # if safeLowNan:
+        #     self.gprecs['safeLow'] = safelow_predict 
+
+        # if averageNan:
+        #     self.gprecs['average'] = avg_predict 
 
         
         self.array30m.append(self.gprecs['safeLow'])
@@ -828,13 +856,43 @@ class GasPriceReport():
         def lookup(gasprice):
 
             if gasprice:
+                checkNan = math.isnan(gasprice)
+                if checkNan:
+                    console.info('get gasprice NaN')
+                    wait = None
+                    return float(0)
+
+                # print('-----------------' , type(gasprice))
                 gasprice = int(gasprice)
                 wait =  prediction_table.at[gasprice, 'expectedTime']
             if wait:
+                checkNan = math.isnan(wait)
+                if checkNan:
+                    console.info('get xyz----- NaN')
+                    wait = None
+                    return float(0)
+
+                print('-----------------' , type(gasprice)) 
                 wait = round(wait, 1)
             else:
                 wait = None
             return float(wait)
+
+        # if self.gprecs['safeLow'] != self.gprecs['safeLow']:
+        #     console.info('------hello world')
+        #     self.gprecs['safeLow'] = 0
+        
+        # if self.gprecs['fast'] != self.gprecs['fast']:
+        #     console.info('---xxxx---hello world')
+        #     self.gprecs['fast'] = 0
+
+        # if self.gprecs['average'] != self.gprecs['average']:
+        #     console.info('---xasdxxx---hello world')
+        #     self.gprecs['average'] = 0
+        
+        # if self.gprecs['fastest'] != self.gprecs['fastest']:
+        #     console.info('---xasdxxx---hello world')
+        #     self.gprecs['fastest'] = 0 
 
         self.gprecs['safeLowWait'] = lookup(self.gprecs['safeLow'])
         self.gprecs['avgWait'] = lookup(self.gprecs['average'])

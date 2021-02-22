@@ -90,7 +90,6 @@ def master_control(args):
             op_time = time.time()
             submitted_30mago = RecentlySubmittedTxDf('30mago', alltx.process_block, 60, 100, 2000000, alltx.df, txpool) 
             console.info("*** stats for transactions submitted ~ 30m ago [" + str(time.time() - op_time) + "] s")
-
             op_time = time.time()
             predictiontable = PredictionTable(blockdata, alltx, txpool, submitted_5mago.df, submitted_30mago.df)
             console.info("*** make a prediction table by gas price [" + str(time.time() - op_time) + "] s")
@@ -101,6 +100,8 @@ def master_control(args):
 
             op_time = time.time()
             predictiontable.get_predicted_wait(gaspricereport, submitted_30mago.nomine_gp)
+            # print(blockdata.safeLow, blockdata.fast, blockdata.fastest )
+
             gaspricereport.get_wait(predictiontable.predictiondf)
             console.info("*** make predicted wait times [" + str(time.time() - op_time) + "] s")
 
