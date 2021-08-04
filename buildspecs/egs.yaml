@@ -1,0 +1,50 @@
+version: 0.2
+
+env:
+  parameter-store:
+    build_ssh_key: 'build-ssh-key-secure'
+
+phases:
+  install:
+    runtime-versions:
+      docker: 19
+  pre_build:
+    commands:
+      - echo Logging in to Amazon ECR...
+      - aws --version
+      - docker --version
+      - $(aws ecr get-login --region $AWS_DEFAULT_REGION --no-include-email)
+      - REPOSITORY_URI=017964463726.dkr.ecr.us-west-1.amazonaws.com/egs-legacy-backend
+      - COMMIT_HASH=$(echo $CODEBUILD_RESOLVED_SOURCE_VERSION | cut -c 1-7)
+      - IMAGE_TAG=${COMMIT_HASH:=latest}
+  build:
+    commands:
+      - echo Build started on `date`
+      - echo Building the Docker image...
+      - echo building image with tag ${IMAGE_TAG}
+      - mkdir -p ~/.ssh
+      - echo "$build_ssh_key" > ~/.ssh/id_rsa
+      - chmod 600 ~/.ssh/id_rsa
+      - DOCKER_BUILDKIT=1 docker build -f Dockerfile --build-arg STAGE="staging" --ssh github="$HOME/.ssh/id_rsa" --tag $REPOSITORY_URI:latest .
+      - docker tag $REPOSITORY_URI:latest $REPOSITORY_URI:$IMAGE_TAG
+  post_build:
+    commands:
+      - echo Build completed on `date`
+      - echo Pushing the Docker images...
+      - docker push $REPOSITORY_URI:latest
+      - docker push $REPOSITORY_URI:$IMAGE_TAG
+      - echo Writing image definitions file...
+      - echo "Setting Environment Variables related to AWS CLI for Kube Config Setup"
+      - CREDENTIALS=$(aws sts assume-role --role-arn "arn:aws:iam::017964463726:role/terraform-eks-dfp-cluster" --role-session-name codebuild-kubectl --duration-seconds 900)
+      - export AWS_ACCESS_KEY_ID="$(echo ${CREDENTIALS} | jq -r '.Credentials.AccessKeyId')"
+      - export AWS_SECRET_ACCESS_KEY="$(echo ${CREDENTIALS} | jq -r '.Credentials.SecretAccessKey')"
+      - export AWS_SESSION_TOKEN="$(echo ${CREDENTIALS} | jq -r '.Credentials.SessionToken')"
+      - export AWS_EXPIRATION=$(echo ${CREDENTIALS} | jq -r '.Credentials.Expiration')
+      - export KUBECONFIG=$HOME/.kube/config
+      # Setup kubectl with our EKS Cluster
+      - aws eks --region us-west-1 update-kubeconfig --name dfp-cluster
+      - kubectl apply -f k8s-manifests/deployments/egs-legacy-backend.yaml
+      - kubectl set image -n egs-legacy-staging deploy/egs-legacy-backend egs-legacy-backend=$REPOSITORY_URI:$IMAGE_TAG
+      - printf '[{"name":"hello-world","imageUri":"%s"}]' $REPOSITORY_URI:$IMAGE_TAG > imagedefinitions.json
+artifacts:
+  files: imagedefinitions.json
