@@ -55,17 +55,17 @@ To run the script as is on bare metal or a VM, manually:
 If you are running a frontend to ETH Gas Station, use the `--generate-report`
 flag to generate detailed JSON reports for front-end or API consumption.
 
+#### Docker
 It is also possible to run the oracle as a Docker container.
 
-1. Change the settings in settings.docker.conf.
-2. Run `docker build -t ethgasstation-backend .` from this directory.
-3. Run `docker run ethgasstation-backend:latest`.
+1. Change the settings and environment variables in `settings.docker.conf` and `.env`
+1. Copy/edit the environment variables to match: `cp .env.example .env`
+2. Run `docker-compose up`
 
 In the Docker service, the Python script will dump data to JSON on Redis.
-You will need to update your settings.conf to the internal hostnames
+You may need to update your settings.conf to the internal hostnames
 available for MariaDB, Redis, and geth or parity, respectively within your
 infrastructure. 
-
 
 ### Deployment
 
@@ -80,13 +80,3 @@ cd /usr/local/SettleFinance/ethgasstation-backend
 pip install -r requirements.txt
 
 pip install --upgrade urllib3
-
-
-
-
-
-
-
-
-
-

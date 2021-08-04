@@ -1,12 +1,16 @@
-FROM ubuntu:xenial
-RUN apt-get update
-RUN apt-get install -y python3 python3-pip
+# Build with:
+# docker build --tag=concourseopen/ethgasstation-backend .
+# Run with:
+# docker run -it --rm concourseopen/ethgasstation-backend
+# Or for interactive shell:
+# docker run -it --rm concourseopen/ethgasstation-backend bash
+FROM python:3.6-slim
 
-ADD requirements.txt /opt/ethgasstation/requirements.txt
-RUN pip3 install -r /opt/ethgasstation/requirements.txt
-
-ADD settings.docker.conf /etc/ethgasstation.conf
-ADD . /opt/ethgasstation/
-ADD ethgasstation.py /opt/ethgasstation/ethgasstation.py
-
-CMD /usr/bin/python3 /opt/ethgasstation/ethgasstation.py
+WORKDIR /app
+RUN apt update && apt install --no-install-recommends --yes \
+    build-essential
+COPY requirements.txt /app
+RUN pip install -r requirements.txt
+COPY . /app
+RUN ln -sfn /app/settings.docker.conf /etc/ethgasstation.conf
+CMD python /app/ethgasstation.py
